@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#130e1c">
+  <title>Gothic Store</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+
+  <!-- Receipt image -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <!-- Background decoration -->
+  <div class="background-decoration">
+    <div class="glow glow-one"></div>
+    <div class="glow glow-two"></div>
+    <div class="star-decoration">✦</div>
+  </div>
+
+  <!-- Top bar -->
+  <header class="topbar">
+    <div class="top-logo">
+      <span class="logo-icon">♱</span>
+      <span id="topStoreName">GOTHIC STORE</span>
+    </div>
+
+    <div class="top-actions">
+      <button class="circle-btn" onclick="openCart()" title="ตะกร้าสินค้า">
+        <i class="fa-solid fa-bag-shopping"></i>
+        <span class="cart-count" id="cartCount">0</span>
+      </button>
+
+      <button class="circle-btn admin-circle" onclick="openAdminLogin()" title="Admin">
+        <i class="fa-solid fa-user-shield"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- Store banner -->
+  <section class="store-header">
+    <div class="banner-wrapper">
+      <img id="storeBanner" src="" alt="Store Banner">
+      <div class="banner-overlay"></div>
+    </div>
+
+    <div class="profile-wrapper">
+      <img id="storeProfile" src="" alt="Store Profile">
+    </div>
+
+    <div class="store-information">
+      <h1 id="storeName">Gothic Store</h1>
+      <p id="storeDescription">Welcome to our little dark paradise ♡</p>
+      <div class="store-decoration">✦ ───── ♱ ───── ✦</div>
+    </div>
+  </section>
+
+  <!-- Marquee -->
+  <div class="marquee-box">
+    <div class="marquee-content" id="marqueeText">
+      ✦ WELCOME TO OUR STORE ✦ THANK YOU FOR VISITING ✦
+      WELCOME TO OUR STORE ✦ THANK YOU FOR VISITING ✦
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <main class="main-container">
+
+    <!-- PAGE 1: PRODUCTS -->
+    <section class="page active" id="productsPage">
+
+      <div class="section-heading">
+        <div>
+          <span class="section-small">OUR COLLECTION</span>
+          <h2>หน้าสินค้า <span>✦</span></h2>
+        </div>
+        <span class="product-total" id="productTotal">0 ITEMS</span>
+      </div>
+
+      <!-- Search and tags -->
+      <div class="product-tools">
+        <div class="search-box">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="productSearch"
+                 placeholder="ค้นหาสินค้า..."
+                 oninput="renderProducts()">
+        </div>
+
+        <select id="productSort" onchange="renderProducts()">
+          <option value="default">เรียงตามปกติ</option>
+          <option value="priceLow">ราคาน้อยไปมาก</option>
+          <option value="priceHigh">ราคามากไปน้อย</option>
+          <option value="newest">สินค้าใหม่</option>
+          <option value="popular">สินค้ายอดนิยม</option>
+        </select>
+      </div>
+
+      <div class="tag-filter" id="tagFilter">
+        <button class="tag-chip active" onclick="filterTag('all',this)">ทั้งหมด</button>
+      </div>
+
+      <!-- Product grid -->
+      <div class="product-grid" id="productGrid">
+        <!-- JavaScript renders products -->
+      </div>
+
+      <div class="empty-state" id="emptyProducts" hidden>
+        <span>♱</span>
+        <h3>ยังไม่มีสินค้า</h3>
+        <p>สินค้าใหม่จะปรากฏที่นี่</p>
+      </div>
+
+    </section>
+
+    <!-- PAGE 2: REVIEWS -->
+    <section class="page" id="reviewsPage">
+
+      <div class="section-heading">
+        <div>
+          <span class="section-small">CUSTOMER EXPERIENCE</span>
+          <h2>เครดิตการซื้อขาย <span>♡</span></h2>
+        </div>
+      </div>
+
+      <!-- Story highlights -->
+      <div class="story-section">
+        <div class="sub-heading">
+          <h3>Story Highlights</h3>
+          <span>✦ MEMORIES ✦</span>
+        </div>
+
+        <div class="story-list" id="storyList">
+          <!-- Stories rendered by JS -->
+        </div>
+      </div>
+
+      <!-- Review statistics -->
+      <div class="review-stat-card">
+        <div class="review-stat">
+          <span class="stat-icon">♡</span>
+          <strong id="reviewCount">0</strong>
+          <small>รีวิวทั้งหมด</small>
+        </div>
+
+        <div class="stat-divider"></div>
+
+        <div class="review-stat">
+          <span class="stat-icon">★</span>
+          <strong id="averageRating">0.0</strong>
+          <small>คะแนนเฉลี่ย</small>
+        </div>
+      </div>
+
+      <button class="primary-btn review-write-btn" onclick="openReviewModal()">
+        <i class="fa-solid fa-pen"></i>
+        เขียนรีวิวการซื้อขาย
+      </button>
+
+      <div class="review-list" id="reviewList">
+        <!-- Reviews rendered by JS -->
+      </div>
+
+    </section>
+
+    <!-- PAGE 3: PAYMENT -->
+    <section class="page" id="paymentPage">
+
+      <div class="section-heading">
+        <div>
+          <span class="section-small">PAYMENT INFORMATION</span>
+          <h2>ช่องทางชำระเงิน <span>♧</span></h2>
+        </div>
+      </div>
+
+      <div class="qr-card">
+        <h3>SCAN TO PAY</h3>
+        <div class="qr-image-wrapper">
+          <img id="paymentQR" src="" alt="Payment QR Code">
+        </div>
+        <p>สแกน QR Code เพื่อชำระเงิน</p>
+        <button class="secondary-btn" onclick="saveQR()">
+          <i class="fa-solid fa-download"></i>
+          บันทึก QR Code
+        </button>
+      </div>
+
+      <div class="account-highlight">
+        <p>ชื่อบัญชี</p>
+        <h3 id="accountOwner">ยังไม่ได้กำหนดชื่อบัญชี</h3>
+      </div>
+
+      <div class="slip-card">
+        <h3>ข้อความกำกับสลิป</h3>
+        <p id="slipMessage">กรุณาแจ้งชื่อผู้สั่งซื้อพร้อมแนบสลิปการโอนเงิน</p>
+        <button class="copy-btn" onclick="copyText('slipMessage')">
+          <i class="fa-regular fa-copy"></i> คัดลอกข้อความ
+        </button>
+      </div>
+
+      <div class="bank-section">
+        <h3>Bank Accounts</h3>
+        <div id="bankList"></div>
+      </div>
+
+    </section>
+
+    <!-- PAGE 4: CONTACT -->
+    <section class="page" id="contactPage">
+
+      <div class="section-heading">
+        <div>
+          <span class="section-small">GET IN TOUCH</span>
+          <h2>ช่องทางติดต่อ <span>✉</span></h2>
+        </div>
+      </div>
+
+      <div class="contact-list" id="contactList">
+        <!-- Contact buttons rendered by JS -->
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Bottom navigation -->
+  <nav class="bottom-navigation">
+    <button class="nav-btn active" onclick="switchPage('productsPage',this)">
+      <i class="fa-solid fa-store"></i>
+      <span>สินค้า</span>
+    </button>
+
+    <button class="nav-btn" onclick="switchPage('reviewsPage',this)">
+      <i class="fa-solid fa-heart"></i>
+      <span>เครดิต</span>
+    </button>
+
+    <button class="nav-btn" onclick="switchPage('paymentPage',this)">
+      <i class="fa-solid fa-qrcode"></i>
+      <span>ชำระเงิน</span>
+    </button>
+
+    <button class="nav-btn" onclick="switchPage('contactPage',this)">
+      <i class="fa-solid fa-comment-dots"></i>
+      <span>ติดต่อ</span>
+    </button>
+  </nav>
+
+  <!-- PRODUCT DETAIL MODAL -->
+  <div class="modal" id="productModal">
+    <div class="modal-content product-detail-modal">
+      <button class="modal-close" onclick="closeModal('productModal')">×</button>
+
+      <div class="detail-gallery">
+        <img id="detailMainImage" src="" alt="Product">
+        <div class="detail-thumbnails" id="detailThumbnails"></div>
+      </div>
+
+      <div class="detail-information">
+        <div class="detail-badges" id="detailBadges"></div>
+        <h2 id="detailName"></h2>
+        <h3 id="detailPrice"></h3>
+        <p id="detailDescription"></p>
+        <div class="detail-tags" id="detailTags"></div>
+
+        <div class="detail-actions">
+          <button class="primary-btn" id="detailAddButton">
+            <i class="fa-solid fa-cart-plus"></i>
+            เพิ่มลงตะกร้า
+          </button>
+          <a id="detailExternalLink" class="secondary-btn"
+             href="#" target="_blank" rel="noopener" hidden>
+            <i class="fa-solid fa-link"></i> ลิงก์เพิ่มเติม
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CART MODAL -->
+  <div class="modal" id="cartModal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeModal('cartModal')">×</button>
+      <div class="modal-heading">
+        <span>YOUR SHOPPING BAG</span>
+        <h2>ตะกร้าสินค้า ♡</h2>
+      </div>
+
+      <div id="cartItems"></div>
+
+      <div class="cart-summary">
+        <label>ชื่อลูกค้า</label>
+        <input id="customerName" type="text" placeholder="กรอกชื่อลูกค้า">
+
+        <div class="total-line">
+          <span>ยอดรวมทั้งหมด</span>
+          <strong id="cartTotal">฿0</strong>
+        </div>
+
+        <button class="primary-btn full-btn" onclick="generateReceipt()">
+          <i class="fa-solid fa-receipt"></i>
+          สร้างใบเสร็จ
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECEIPT MODAL -->
+  <div class="modal" id="receiptModal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeModal('receiptModal')">×</button>
+
+      <div class="receipt-paper" id="receiptPaper">
+        <div class="receipt-top">
+          <span>♱</span>
+          <h2 id="receiptStoreName">GOTHIC STORE</h2>
+          <p id="receiptStoreDescription">Thank you for shopping ♡</p>
+        </div>
+
+        <div class="receipt-divider"></div>
+
+        <div class="receipt-info">
+          <p>เลขที่ใบเสร็จ: <span id="receiptNumber"></span></p>
+          <p>วันที่: <span id="receiptDate"></span></p>
+          <p>ลูกค้า: <span id="receiptCustomer"></span></p>
+        </div>
+
+        <div class="receipt-divider"></div>
+
+        <div id="receiptProducts"></div>
+
+        <div class="receipt-divider"></div>
+
+        <div class="receipt-total">
+          <span>ยอดรวมสุทธิ</span>
+          <strong id="receiptTotal"></strong>
+        </div>
+
+        <div class="receipt-bottom">
+          <p>THANK YOU FOR YOUR PURCHASE</p>
+          <span>✦ ♡ ♱ ♡ ✦</span>
+        </div>
+      </div>
+
+      <button class="primary-btn full-btn" onclick="downloadReceipt()">
+        <i class="fa-solid fa-image"></i>
+        บันทึกใบเสร็จ JPEG
+      </button>
+    </div>
+  </div>
+
+  <!-- REVIEW MODAL -->
+  <div class="modal" id="reviewModal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeModal('reviewModal')">×</button>
+
+      <div class="modal-heading">
+        <span>SHARE YOUR EXPERIENCE</span>
+        <h2>เขียนรีวิว ♡</h2>
+      </div>
+
+      <form id="reviewForm" onsubmit="submitReview(event)">
+        <label>ชื่อผู้รีวิว</label>
+        <input type="text" id="reviewerName" required placeholder="ชื่อของคุณ">
+
+        <label>คะแนนรีวิว</label>
+        <div class="rating-input" id="ratingInput">
+          <button type="button" onclick="setRating(1)">★</button>
+          <button type="button" onclick="setRating(2)">★</button>
+          <button type="button" onclick="setRating(3)">★</button>
+          <button type="button" onclick="setRating(4)">★</button>
+          <button type="button" onclick="setRating(5)">★</button>
+        </div>
+
+        <label>ข้อความรีวิว</label>
+        <textarea id="reviewText" required placeholder="เขียนความประทับใจของคุณ..."></textarea>
+
+        <label>รูปภาพหรือ GIF</label>
+        <input type="file" id="reviewFiles" accept="image/*,.gif" multiple>
+
+        <div class="upload-preview" id="reviewPreview"></div>
+
+        <button type="submit" class="primary-btn full-btn">
+          ส่งรีวิว
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- STORY VIEWER -->
+  <div class="modal story-modal" id="storyModal">
+    <div class="story-viewer">
+      <div class="story-progress" id="storyProgress"></div>
+
+      <button class="modal-close story-close" onclick="closeStory()">×</button>
+
+      <button class="story-arrow story-prev" onclick="previousStory()">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+
+      <img id="storyImage" src="" alt="Story">
+
+      <button class="story-arrow story-next" onclick="nextStory()">
+        <i class="fa-solid fa-chevron-right"></i>
+      </button>
+
+      <div class="story-caption" id="storyCaption"></div>
+    </div>
+  </div>
+
+  <!-- ADMIN LOGIN -->
+  <div class="modal" id="adminLoginModal">
+    <div class="modal-content admin-login">
+      <button class="modal-close" onclick="closeModal('adminLoginModal')">×</button>
+
+      <div class="admin-icon">♱</div>
+      <h2>ADMIN LOGIN</h2>
+      <p>Welcome back, administrator</p>
+
+      <form onsubmit="adminLogin(event)">
+        <label>อีเมลแอดมิน</label>
+        <input type="email" id="adminEmail" required placeholder="Admin email">
+
+        <label>รหัสผ่าน</label>
+        <input type="password" id="adminPassword" required placeholder="Password">
+
+        <button type="submit" class="primary-btn full-btn">
+          เข้าสู่ระบบ
+        </button>
+      </form>
+
+      <p id="adminLoginMessage" class="error-message"></p>
+    </div>
+  </div>
+
+  <!-- ADMIN DASHBOARD -->
+  <div class="modal" id="adminModal">
+    <div class="modal-content admin-dashboard">
+      <button class="modal-close" onclick="closeModal('adminModal')">×</button>
+
+      <div class="modal-heading">
+        <span>CONTROL CENTER</span>
+        <h2>Admin Dashboard ♱</h2>
+      </div>
+
+      <div class="admin-tabs">
+        <button onclick="showAdminTab('adminProducts',this)" class="active">สินค้า</button>
+        <button onclick="showAdminTab('adminReviews',this)">รีวิว</button>
+        <button onclick="showAdminTab('adminStories',this)">Stories</button>
+        <button onclick="showAdminTab('adminPayment',this)">ชำระเงิน</button>
+        <button onclick="showAdminTab('adminContacts',this)">ติดต่อ</button>
+        <button onclick="showAdminTab('adminDesign',this)">ตกแต่ง</button>
+        <button onclick="showAdminTab('adminSettings',this)">ตั้งค่า</button>
+      </div>
+
+      <!-- ADMIN PRODUCTS -->
+      <div class="admin-tab active" id="adminProducts">
+        <h3>จัดการสินค้า</h3>
+
+        <form id="productForm" onsubmit="saveProduct(event)">
+          <input type="hidden" id="editProductId">
+
+          <label>ชื่อสินค้า</label>
+          <input id="inputProductName" required>
+
+          <label>ราคา</label>
+          <input id="inputProductPrice" type="number" min="0" required>
+
+          <label>รูปหลักสินค้า</label>
+          <input id="inputProductImage" type="file" accept="image/*">
+
+          <label>รูปเพิ่มเติม</label>
+          <input id="inputProductGallery" type="file" accept="image/*" multiple>
+
+          <label>รายละเอียดสินค้า</label>
+          <textarea id="inputProductDescription"></textarea>
+
+          <label>ป้ายสินค้า</label>
+          <div class="badge-options">
+            <label><input type="checkbox" value="ฮิต" name="productBadge"> ฮิต</label>
+            <label><input type="checkbox" value="แนะนำ" name="productBadge"> แนะนำ</label>
+            <label><input type="checkbox" value="โปรโมชั่น" name="productBadge"> โปรโมชั่น</label>
+            <label><input type="checkbox" value="ลดราคา" name="productBadge"> ลดราคา</label>
+          </div>
+
+          <label>แท็กสินค้า (คั่นด้วยเครื่องหมาย ,)</label>
+          <input id="inputProductTags" placeholder="เสื้อผ้า, น่ารัก, พร้อมส่ง">
+
+          <label>ลิงก์เพิ่มเติม</label>
+          <input id="inputProductLink" type="url" placeholder="https://">
+
+          <button type="submit" class="primary-btn full-btn">บันทึกสินค้า</button>
+          <button type="button" class="secondary-btn full-btn" onclick="resetProductForm()">ล้างฟอร์ม</button>
+        </form>
+
+        <div id="adminProductList"></div>
+      </div>
+
+      <!-- ADMIN REVIEWS -->
+      <div class="admin-tab" id="adminReviews">
+        <h3>จัดการรีวิว</h3>
+        <div id="adminReviewList"></div>
+      </div>
+
+      <!-- ADMIN STORIES -->
+      <div class="admin-tab" id="adminStories">
+        <h3>จัดการ Story Highlights</h3>
+
+        <form id="storyForm" onsubmit="saveStory(event)">
+          <input type="hidden" id="editStoryId">
+
+          <label>ชื่อไฮไลท์</label>
+          <input id="storyTitle" required>
+
+          <label>รูปปก</label>
+          <input id="storyCover" type="file" accept="image/*">
+
+          <label>รูปภายในไฮไลท์</label>
+          <input id="storyFiles" type="file" accept="image/*" multiple>
+
+          <button class="primary-btn full-btn" type="submit">บันทึกไฮไลท์</button>
+        </form>
+
+        <div id="adminStoryList"></div>
+      </div>
+
+      <!-- ADMIN PAYMENT -->
+      <div class="admin-tab" id="adminPayment">
+        <h3>ตั้งค่าการชำระเงิน</h3>
+
+        <form onsubmit="savePayment(event)">
+          <label>QR Code</label>
+          <input type="file" id="inputQR" accept="image/*">
+
+          <label>ชื่อบัญชี</label>
+          <input id="inputAccountOwner">
+
+          <label>ข้อความกำกับสลิป</label>
+          <textarea id="inputSlipMessage"></textarea>
+
+          <button class="primary-btn full-btn">บันทึกข้อมูล</button>
+        </form>
+
+        <h3>บัญชีธนาคาร</h3>
+
+        <form onsubmit="saveBank(event)">
+          <input type="hidden" id="editBankId">
+
+          <label>ชื่อธนาคารภาษาอังกฤษ</label>
+          <input id="bankEnglish" required>
+
+          <label>ชื่อธนาคารภาษาไทย</label>
+          <input id="bankThai" required>
+
+          <label>เลขบัญชี</label>
+          <input id="bankNumber" required>
+
+          <button class="primary-btn full-btn">บันทึกบัญชี</button>
+        </form>
+
+        <div id="adminBankList"></div>
+      </div>
+
+      <!-- ADMIN CONTACTS -->
+      <div class="admin-tab" id="adminContacts">
+        <h3>จัดการช่องทางติดต่อ</h3>
+
+        <form onsubmit="saveContact(event)">
+          <input type="hidden" id="editContactId">
+
+          <label>ชื่อช่องทาง</label>
+          <input id="contactName" required>
+
+          <label>ลิงก์</label>
+          <input id="contactUrl" type="url" required>
+
+          <label>ไอคอน Font Awesome</label>
+          <input id="contactIcon" placeholder="fa-brands fa-instagram">
+
+          <button class="primary-btn full-btn">บันทึกช่องทาง</button>
+        </form>
+
+        <div id="adminContactList"></div>
+      </div>
+
+      <!-- ADMIN DESIGN -->
+      <div class="admin-tab" id="adminDesign">
+        <h3>ตกแต่งร้านค้า</h3>
+
+        <label>รูปโปรไฟล์ร้าน</label>
+        <input type="file" id="designProfile" accept="image/*">
+
+        <label>รูปแบนเนอร์ร้าน</label>
+        <input type="file" id="designBanner" accept="image/*">
+
+        <label>ชื่อร้าน</label>
+        <input id="designStoreName">
+
+        <label>รายละเอียดร้าน</label>
+        <textarea id="designStoreDescription"></textarea>
+
+        <label>ข้อความวิ่ง</label>
+        <input id="designMarquee">
+
+        <h4>เลือกธีมสำเร็จรูป</h4>
+        <div class="theme-grid" id="themeGrid"></div>
+
+        <h4>ปรับแต่งสีด้วยตนเอง</h4>
+        <div id="customColorSettings"></div>
+
+        <button class="primary-btn full-btn" onclick="saveDesign()">
+          บันทึกการตกแต่ง
+        </button>
+      </div>
+
+      <!-- ADMIN SETTINGS -->
+      <div class="admin-tab" id="adminSettings">
+        <h3>ตั้งค่าร้านค้า</h3>
+            <div class="settings-info">
+          <p>ระบบจัดการข้อมูลร้านค้า</p>
+          <p id="firebaseStatus">กำลังตรวจสอบ Firebase...</p>
+          <p id="adminUid"></p>
+        </div>
+
+        <button class="secondary-btn full-btn" onclick="exportStoreData()">
+          <i class="fa-solid fa-download"></i> สำรองข้อมูลร้าน
+        </button>
+
+        <button class="secondary-btn full-btn" onclick="adminLogout()">
+          <i class="fa-solid fa-right-from-bracket"></i> ออกจากระบบแอดมิน
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="app.js"></script>
+
+</body>
+</html>
